@@ -14,7 +14,7 @@ class AesEngIntf (val engNum: Int=1) extends Bundle {
   val cipherValid = Output(Bool())
 }
 
-class AesTop(Nk: Int=4, encEngNum: Int=1, decEngNum: Int=1) extends Module {
+class AesTop(Nk: Int=4, pipelineEng:Boolean, encEngNum: Int=1, decEngNum: Int=1) extends Module {
   val io = IO(new Bundle {
     val Nr = Nk+6
     val encIntf = new AesEngIntf(encEngNum)
@@ -29,11 +29,11 @@ class AesTop(Nk: Int=4, encEngNum: Int=1, decEngNum: Int=1) extends Module {
 
   // currently expKeyValid is not used, we need to guarantee encryption/decryption starts after expKeyValid=1
 
-  io.encIntf.cipherValid := ShiftRegister(io.encIntf.textValid, io.Nr+1)
-  io.encIntf.cipher := io.encIntf.text.map(PipelineCipher(Nk)(_, expKey))
+  io.encIntf.cipherValid := ShiftRegister(io.encIntf.textValid, if (pipelineEng) PipelineCipher.latencyCycles(Nk) else IteratedCipher.latencyCycles(Nk))
+  io.encIntf.cipher := io.encIntf.text.map(if (pipelineEng) PipelineCipher(Nk)(_, expKey) else IteratedCipher(Nk)(_, io.encIntf.textValid, expKey))
 
-  io.decIntf.textValid := ShiftRegister(io.decIntf.cipherValid, io.Nr+1)
-  io.decIntf.text := io.decIntf.cipher.map(PipelineInvCipher(Nk)(_, expKey))
+  io.decIntf.textValid := ShiftRegister(io.decIntf.cipherValid, if (pipelineEng) PipelineInvCipher.latencyCycles(Nk) else IteratedInvCipher.latencyCycles(Nk))
+  io.decIntf.text := io.decIntf.cipher.map(if (pipelineEng) PipelineInvCipher(Nk)(_, expKey) else IteratedInvCipher(Nk)(_, io.decIntf.cipherValid, expKey))
 }
 
 class AesTrial(Nk: Int = 4) extends Module{
@@ -47,7 +47,7 @@ class AesTrial(Nk: Int = 4) extends Module{
     val cipher = Output(UInt(128.W))
   })
 
-  val aesTop = Module(new AesTop(Nk, 1, 1))
+  val aesTop = Module(new AesTop(Nk, false, 1, 1))
   aesTop.io.key := io.key
   aesTop.io.startKeyExp := io.startKeyExp
   aesTop.io.encIntf.text(0) := io.text
