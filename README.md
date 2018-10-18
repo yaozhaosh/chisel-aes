@@ -1,5 +1,42 @@
-Chisel Project Template
-=======================
+Chisel AES implementation
+=========================
+
+###Brief introduction
+* default setting: Nk=8, one pair of encryption/decryption engines, iterated engines
+* Nk options: 4(128-bit key), 6(192-bit key), 8(256-bit key)
+* engine parallelism set by encEngNum/decEngNum
+* PipelineEng: true - pipeline engines (16B/cycle); false - iterated engines (16B/(Nk+7) cycles)
+* Top module is AesTop, the AesTrial is for simplified test only
+* AesRef.scala is the Scala written AES reference model
+
+###Interface descriptions
+* key: AES key, 128-bit/192-bit/256-bit
+* startKeyExp: HIGH pulse to trigger key expansion
+* keyExpReady: HIGH to indicate key expansion circuit is ready, user should not assert startKeyExp when keyExpReady=false
+* encEngReady: HIGH to indicate encryption engine is ready, user should not assert encIntf.text.valid when encEngReady=false
+* decEngReady: HIGH to indicate decryption engine is ready, user should not assert decIntf.cipher.valid when decEngReady=false
+* encIntf.text.bits: text for encryption, 128-bit
+* encIntf.text.valid: HIGH to indicate there is text for encryption in the current cycle
+* encIntf.cipher.bits: cipher of encryption 
+* encIntf.cipher.valid: HIGH to indicate a valid cycle of cipher
+* decIntf.cipher.bits: cipher for decryption, 128-bit
+* decIntf.cipher.valid: HIGH to indicate there is cipher for decryption in the current cycle
+* decIntf.text.bits: text from decryption 
+* decIntf.text.valid: HIGH to indicate a valid cycle of text from decryption 
+
+###How to run
+* FIR backend
+```sh
+sbt "test:runMain aes.AesTrialMain"
+```
+* Verilator backend (with VCD waveform output, it consumes a lot of memory, may exit before running)
+```sh
+sbt "test:runMain aes.AesTrialMain --backend-name verilator"
+```
+
+*The following is copied from Chisel Project Template*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Chisel Project Template
 
 You've done the chisel [tutorials](https://github.com/ucb-bar/chisel-tutorial.git), and now you 
 are ready to start your own chisel project.  The following procedure should get you started
