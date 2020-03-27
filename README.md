@@ -1,7 +1,7 @@
 Chisel AES implementation
 =========================
 
-###Brief introduction
+### Brief introduction
 * default setting: Nk=8, one pair of encryption/decryption engines, iterated engines
 * Nk options: 4(128-bit key), 6(192-bit key), 8(256-bit key)
 * engine parallelism set by encEngNum/decEngNum
@@ -9,7 +9,7 @@ Chisel AES implementation
 * Top module is AesTop, the AesTrial is for simplified test only
 * AesRef.scala is the Scala written AES reference model
 
-###Interface descriptions
+### Interface descriptions
 * key: AES key, 128-bit/192-bit/256-bit
 * startKeyExp: HIGH pulse to trigger key expansion
 * keyExpReady: HIGH to indicate key expansion circuit is ready, user should not assert startKeyExp when keyExpReady=false
@@ -24,7 +24,7 @@ Chisel AES implementation
 * decIntf.text.bits: text from decryption 
 * decIntf.text.valid: HIGH to indicate a valid cycle of text from decryption 
 
-###How to run
+### How to run
 * FIR backend
 ```sh
 sbt "test:runMain aes.AesTrialMain"
